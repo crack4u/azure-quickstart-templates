@@ -3,6 +3,6 @@
   "icon": "windowsVM",
   "description": "This template allows you to deploy a simple Windows VM using a few different options for the Windows version, using the latest patched version. This will deploy a A2 size VM in the resource group location and return the FQDN of the VM.",
   "summary": "This template takes a minimum amount of parameters and deploys a Windows VM, using the latest patched version.",
-  "githubUsername": "bmoore-msft",
-  "dateUpdated": "2016-12-14"
+  "githubUsername": "crack4u",
+  "dateUpdated": "2018-03-03"
 }

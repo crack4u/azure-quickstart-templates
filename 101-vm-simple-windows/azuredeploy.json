@@ -2,16 +2,16 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "adminUsername": {
-      "type": "string",
-      "metadata": {
-        "description": "Username for the Virtual Machine."
-      }
-    },
     "adminPassword": {
       "type": "securestring",
       "metadata": {
         "description": "Password for the Virtual Machine."
+      }
+    },
+    "adminUsername": {
+      "type": "string",
+      "metadata": {
+        "description": "Username for the Virtual Machine."
       }
     },
     "dnsLabelPrefix": {
@@ -37,45 +37,44 @@
     }
   },
   "variables": {
-    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
-    "nicName": "myVMNic",
     "addressPrefix": "10.0.0.0/16",
+    "nicName": "myVMNic",
+    "publicIPAddressName": "myPublicIP",
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'sawinvm')]",
     "subnetName": "Subnet",
     "subnetPrefix": "10.0.0.0/24",
-    "publicIPAddressName": "myPublicIP",
-    "vmName": "SimpleWinVM",
+    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
     "virtualNetworkName": "MyVNET",
-    "subnetRef": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]"
+    "vmName": "SimpleWinVM"
   },
   "resources": [
     {
-      "type": "Microsoft.Storage/storageAccounts",
-      "name": "[variables('storageAccountName')]",
       "apiVersion": "2016-01-01",
+      "kind": "Storage",
       "location": "[resourceGroup().location]",
+      "name": "[variables('storageAccountName')]",
+      "properties": {},
       "sku": {
         "name": "Standard_LRS"
       },
-      "kind": "Storage",
-      "properties": {}
+      "type": "Microsoft.Storage/storageAccounts"
     },
     {
       "apiVersion": "2016-03-30",
-      "type": "Microsoft.Network/publicIPAddresses",
-      "name": "[variables('publicIPAddressName')]",
       "location": "[resourceGroup().location]",
+      "name": "[variables('publicIPAddressName')]",
       "properties": {
         "publicIPAllocationMethod": "Dynamic",
         "dnsSettings": {
           "domainNameLabel": "[parameters('dnsLabelPrefix')]"
         }
-      }
+      },
+      "type": "Microsoft.Network/publicIPAddresses"
     },
     {
       "apiVersion": "2016-03-30",
-      "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworkName')]",
       "location": "[resourceGroup().location]",
+      "name": "[variables('virtualNetworkName')]",
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -90,7 +89,8 @@
             }
           }
         ]
-      }
+      },
+      "type": "Microsoft.Network/virtualNetworks"
     },
     {
       "apiVersion": "2016-03-30",
@@ -120,27 +120,26 @@
     },
     {
       "apiVersion": "2017-03-30",
-      "type": "Microsoft.Compute/virtualMachines",
-      "name": "[variables('vmName')]",
-      "location": "[resourceGroup().location]",
       "dependsOn": [
         "[resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))]",
         "[resourceId('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
+      "location": "[resourceGroup().location]",
+      "name": "[variables('vmName')]",
       "properties": {
         "hardwareProfile": {
           "vmSize": "Standard_A2"
         },
         "osProfile": {
-          "computerName": "[variables('vmName')]",
-          "adminUsername": "[parameters('adminUsername')]",
-          "adminPassword": "[parameters('adminPassword')]"
+          "adminPassword": "LekkerSecure2018!",
+          "adminUsername": "Gregor",
+          "computerName": "gvdbtestvm01"
         },
         "storageProfile": {
           "imageReference": {
             "publisher": "MicrosoftWindowsServer",
             "offer": "WindowsServer",
-            "sku": "[parameters('windowsOSVersion')]",
+            "sku": "2016-Datacenter",
             "version": "latest"
           },
           "osDisk": {
@@ -167,7 +166,8 @@
             "storageUri": "[reference(resourceId('Microsoft.Storage/storageAccounts/', variables('storageAccountName'))).primaryEndpoints.blob]"
           }
         }
-      }
+      },
+      "type": "Microsoft.Compute/virtualMachines"
     }
   ],
   "outputs": {
